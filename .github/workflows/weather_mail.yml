@@ -1,0 +1,31 @@
+name: Weather Mail
+
+on:
+  schedule:
+    - cron: "0 4 * * *"   # KST 13:00
+    - cron: "0 6 * * *"   # KST 15:00
+  workflow_dispatch:       # 수동 실행 가능
+
+jobs:
+  send-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run weather mail script
+        env:
+          KMA_API_KEY:  ${{ secrets.KMA_API_KEY }}
+          GMAIL_USER:   ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PW: ${{ secrets.GMAIL_APP_PW }}
+          MAIL_TO:      ${{ secrets.MAIL_TO }}
+        run: python scripts/weather_mail.py
