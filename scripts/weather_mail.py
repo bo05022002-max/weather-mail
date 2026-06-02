@@ -47,10 +47,14 @@ def fetch_forecast(base_date: str, base_time: str) -> list[dict]:
     items = resp.json()["response"]["body"]["items"]["item"]
     return items
 
-def wind_chill(T: float, V: float) -> float:
-    if V <= 0:
-        return T
-    return 13.12 + 0.6215 * T - 11.37 * (V ** 0.16) + 0.3965 * (V ** 0.16) * T
+def heat_index(T: float, RH: float) -> float:
+        """기온(°C) + 상대습도(%)로 체감온도 계산 (Steadman 공식 섭씨 변환)"""
+        T_f = T * 9 / 5 + 32
+        HI_f = (-42.379 + 2.04901523 * T_f + 10.14333127 * RH
+                            - 0.22475541 * T_f * RH - 0.00683783 * T_f ** 2
+                            - 0.05481717 * RH ** 2 + 0.00122874 * T_f ** 2 * RH
+                            + 0.00085282 * T_f * RH ** 2 - 0.00000199 * T_f ** 2 * RH ** 2)
+        return (HI_f - 32) * 5 / 9
 
 def parse_items(items: list[dict], target_date: str) -> list[dict]:
     data: dict[str, dict] = {}
@@ -69,7 +73,8 @@ def parse_items(items: list[dict], target_date: str) -> list[dict]:
             tmp = float(d.get("TMP", "NaN"))
             wsd = float(d.get("WSD", 0))
             reh = d.get("REH", "-")
-            wci = wind_chill(tmp, wsd)
+            reh_float = float(reh) if reh != "-" else 60.0
+                        wci = heat_index(tmp, reh_float)
             rows.append({
                 "time": f"{int(t[:2])}시",
                 "wci":  f"{wci:.0f}°C",
