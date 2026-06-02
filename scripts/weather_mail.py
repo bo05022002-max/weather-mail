@@ -74,7 +74,7 @@ def parse_items(items: list[dict], target_date: str) -> list[dict]:
             wsd = float(d.get("WSD", 0))
             reh = d.get("REH", "-")
             reh_float = float(reh) if reh != "-" else 60.0
-                        wci = heat_index(tmp, reh_float)
+            wci = heat_index(tmp, reh_float)
             rows.append({
                 "time": f"{int(t[:2])}시",
                 "wci":  f"{wci:.0f}°C",
